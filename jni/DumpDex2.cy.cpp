@@ -11,27 +11,7 @@
 #include "base64.h"
 
 
-/**
- * exclude process name:
- *
- * <pre-initialized>
- * zygote
- * app_process
- * /system/bin/dexopt
- *
- * android.process.acore
- * android.process.media
- * com.android.phone
- * com.android.systemui
- *
- * com.google.android.gms
- * com.google.android.gms.persistent
- * com.google.process.gapps
- * com.google.android.gms.wearable
- */
-
 //http://androidxref.com/4.4.4_r1/xref/frameworks/base/core/java/android/app/ActivityThread.java#4861
-//C 成功一般返回0
 const char* ex0 = "<pre-initialized>";  //对应没脱壳的 odex 文件, UI 线程的 tag
 
 const char* ex1 = "zygote";
@@ -46,7 +26,7 @@ const char* ex9 = "com.android.systemui";
 const char* ex10 = "com.google.android.gms.unstable";
 const char* ex11 = "android.process.acore";
 const char* ex12 = "android.process.media";
-const char* ex13 = "";  //要排除的系统应用和谷歌应用比较多..能取到appInfo.flags就好了.取到这个的前提是有context.
+
 
 const char* workDir = "/sdcard/mydex/";
 
@@ -72,7 +52,6 @@ int getProcessName(char * buffer){
     strcat(path_t, "/proc/");
     strcat(path_t, str);
     strcat(path_t, "/cmdline");
-    //LOGD("path:%s", path_t);
     int fd_t = open(path_t, O_RDONLY);
     if(fd_t>0){
         int read_count = read(fd_t, buffer, BUFLEN);
@@ -91,7 +70,7 @@ int getProcessName(char * buffer){
     return 0;
 }
 
-//检查文件夹是否存在，不存在则创建之
+//检查文件夹是否存在，不存在则创建
 int checkDir()
 {
 
@@ -116,13 +95,12 @@ MSConfig(MSFilterLibrary,"/system/lib/libdvm.so")
 //保留原来的地址  DexFile* dexFileParse(const u1* data, size_t length, int flags)
 DexFile* (* oldDexFileParse)(const u1* data, size_t length, int flags);
 
-//替换的函数
+//替换的函数,导出dex文件
 DexFile* myDexFileParse(const u1 * addr,size_t len,int dvmdex)
 {
 	//LOGD("call myDexFileParse! : %d",getpid());
 
 	{
-		// 导出dex文件
 		/*
 		 * bufferProcess: processname
 		 * dexbuffer: _dump_len
@@ -150,7 +128,7 @@ DexFile* myDexFileParse(const u1 * addr,size_t len,int dvmdex)
 		if(checkDir())
 			LOGD("Dir /sdcard/mydex/ not exit and create it failed, please check it!");
 
-//		//对 pre-init 进行 pid 拼接
+//		对 pre-init 进行 pid 拼接
 //		if(!strcmp(bufferProcess,ex0))
 //			sprintf(dexbuffer, "_pid_%d", getpid());
 //		else
