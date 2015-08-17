@@ -109,7 +109,7 @@ DexFile* myDexFileParse(const u1 * addr,size_t len,int dvmdex)
 		 */
 	    char dexbuffer[64]={0};
 	    char dexbufferNamed[128]={0};
-		char * bufferProcess=(char*)calloc(256,sizeof(char*));
+		char * bufferProcess=(char*)calloc(256,sizeof(char));
 
 		//得到 processname
 		int  processStatus= getProcessName(bufferProcess);
